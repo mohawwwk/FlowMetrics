@@ -28,7 +28,10 @@ def render_kpi_card(
         f'<div class="apex-card-subtitle">{delta_html}<span>{subtitle}</span></div>'
         f'</div>'
     )
-    st.markdown(card_html, unsafe_allow_html=True)
+    if hasattr(st, "html"):
+        st.html(card_html)
+    else:
+        st.markdown(card_html, unsafe_allow_html=True)
 
 
 def render_status_pill(status: str, label: str) -> str:
