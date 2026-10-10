@@ -35,7 +35,7 @@ def render_home_page():
         f'{render_status_pill(s_stat["status"], "Spark Streaming")}'
         f'{render_status_pill(db_stat["status"], "SQLite WAL")}'
         f'{render_status_pill(ml_stat["status"], "Spark MLlib")}'
-        f'<span style="margin-left: auto; color: #64748b; font-size: 12px; display: inline-flex; align-items: center;">⏱️ Last Synced: {time.strftime("%H:%M:%S")}</span>'
+        f'<span style="margin-left: auto; color: #64748b; font-size: 12px; display: inline-flex; align-items: center; white-space: nowrap;">⏱️ Last Synced: {time.strftime("%H:%M:%S")}</span>'
         '</div>'
     )
     st.markdown(status_html, unsafe_allow_html=True)
