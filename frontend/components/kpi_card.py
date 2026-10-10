@@ -21,18 +21,13 @@ def render_kpi_card(
         symbol = "↑" if delta_type == "up" else "↓" if delta_type == "down" else "•"
         delta_html = f'<span class="{badge_class}">{symbol} {delta}</span>'
 
-    card_html = f"""
-    <div class="apex-metric-card">
-        <div class="apex-card-title">
-            <span>{icon}</span> {title}
-        </div>
-        <div class="apex-card-value">{value}</div>
-        <div class="apex-card-subtitle">
-            {delta_html}
-            <span>{subtitle}</span>
-        </div>
-    </div>
-    """
+    card_html = (
+        f'<div class="apex-metric-card">'
+        f'<div class="apex-card-title"><span>{icon}</span> {title}</div>'
+        f'<div class="apex-card-value">{value}</div>'
+        f'<div class="apex-card-subtitle">{delta_html}<span>{subtitle}</span></div>'
+        f'</div>'
+    )
     st.markdown(card_html, unsafe_allow_html=True)
 
 
@@ -48,9 +43,4 @@ def render_status_pill(status: str, label: str) -> str:
         pill_class = "status-offline"
         pulse_class = "pulse-red"
 
-    return f"""
-    <span class="status-pill {pill_class}">
-        <span class="pulse-dot {pulse_class}"></span>
-        {label}: <b>{status}</b>
-    </span>
-    """
+    return f'<span class="status-pill {pill_class}"><span class="pulse-dot {pulse_class}"></span>{label}: <b>{status}</b></span>'

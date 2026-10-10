@@ -29,20 +29,16 @@ def render_home_page():
     db_stat = health_service.check_sqlite_status()
     ml_stat = health_service.check_ml_model_status()
 
-    st.markdown(
-        f"""
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;">
-            {render_status_pill(k_stat['status'], 'Kafka Broker')}
-            {render_status_pill(s_stat['status'], 'Spark Streaming')}
-            {render_status_pill(db_stat['status'], 'SQLite WAL')}
-            {render_status_pill(ml_stat['status'], 'Spark MLlib')}
-            <span style="margin-left: auto; color: #64748b; font-size: 12px; display: flex; align-items: center;">
-                ⏱️ Last Synced: {time.strftime('%H:%M:%S')}
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    status_html = (
+        '<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 24px;">'
+        f'{render_status_pill(k_stat["status"], "Kafka Broker")}'
+        f'{render_status_pill(s_stat["status"], "Spark Streaming")}'
+        f'{render_status_pill(db_stat["status"], "SQLite WAL")}'
+        f'{render_status_pill(ml_stat["status"], "Spark MLlib")}'
+        f'<span style="margin-left: auto; color: #64748b; font-size: 12px; display: inline-flex; align-items: center;">⏱️ Last Synced: {time.strftime("%H:%M:%S")}</span>'
+        '</div>'
     )
+    st.markdown(status_html, unsafe_allow_html=True)
 
     # Primary KPI Cards Row
     stats = db_service.get_database_stats()
