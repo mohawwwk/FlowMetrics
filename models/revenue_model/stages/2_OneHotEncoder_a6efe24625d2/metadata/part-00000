@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1791664944802,"sparkVersion":"3.5.3","uid":"OneHotEncoder_a6efe24625d2","paramMap":{"outputCols":["Country_vec","StockPrefix_vec"],"inputCols":["Country_idx","StockPrefix_idx"],"handleInvalid":"keep"},"defaultParamMap":{"outputCol":"OneHotEncoder_a6efe24625d2__output","dropLast":true,"handleInvalid":"error"}}

@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.StringIndexerModel","timestamp":1791664944065,"sparkVersion":"3.5.3","uid":"StringIndexer_b3d95abaa637","paramMap":{"handleInvalid":"keep","outputCol":"StockPrefix_idx","inputCol":"StockPrefix"},"defaultParamMap":{"stringOrderType":"frequencyDesc","handleInvalid":"error","outputCol":"StringIndexer_b3d95abaa637__output"}}

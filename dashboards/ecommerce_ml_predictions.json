@@ -1,0 +1,213 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Predictions Scored",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, COUNT(*) as value FROM ml_predictions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 2,
+      "title": "Model Prediction Bias (Mean Error)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, ROUND(AVG(predicted_revenue - actual_revenue), 2) as value FROM ml_predictions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "unit": "currencyGBP"
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 3,
+      "title": "Model RMSE",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, ROUND(SQRT(AVG((predicted_revenue - actual_revenue) * (predicted_revenue - actual_revenue))), 2) as value FROM ml_predictions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 50,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "unit": "currencyGBP"
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 4,
+      "title": "Model MAE",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, ROUND(AVG(abs_error), 2) as value FROM ml_predictions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 30,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 8 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "unit": "currencyGBP"
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 5,
+      "title": "Actual vs Predicted Revenue",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 16, "x": 0, "y": 4 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT id as time, actual_revenue as 'Actual Revenue', predicted_revenue as 'Predicted Revenue' FROM ml_predictions ORDER BY id ASC LIMIT 100;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "showPoints": "auto"
+          },
+          "unit": "currencyGBP"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Residual Error Distribution",
+      "type": "barchart",
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 4 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE WHEN abs_error < 2 THEN '< £2' WHEN abs_error < 5 THEN '£2 - £5' WHEN abs_error < 10 THEN '£5 - £10' WHEN abs_error < 25 THEN '£10 - £25' ELSE '> £25' END as error_bucket, COUNT(*) as count FROM ml_predictions GROUP BY error_bucket ORDER BY count DESC;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Top Prediction Discrepancies (Model Drift Monitoring)",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 13 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT invoice_no, stock_code, quantity, unit_price, country, actual_revenue, predicted_revenue, abs_error, model_name, prediction_timestamp FROM ml_predictions ORDER BY abs_error DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "actual_revenue" },
+            "properties": [{ "id": "unit", "value": "currencyGBP" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "predicted_revenue" },
+            "properties": [{ "id": "unit", "value": "currencyGBP" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "abs_error" },
+            "properties": [
+              { "id": "unit", "value": "currencyGBP" },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "orange", "value": 20 },
+                    { "color": "red", "value": 100 }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["ml", "predictions", "regression", "sqlite", "mllib"],
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "title": "Spark MLlib Revenue Prediction Performance",
+  "uid": "ecommerce-ml-predictions",
+  "version": 1
+}

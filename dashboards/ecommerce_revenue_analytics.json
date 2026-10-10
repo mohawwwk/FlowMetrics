@@ -1,0 +1,280 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Revenue",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, ROUND(SUM(revenue), 2) as value FROM processed_transactions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "currencyGBP"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Total Orders",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, COUNT(DISTINCT invoice_no) as value FROM processed_transactions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Average Purchase (AOV)",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, ROUND(SUM(revenue) / COUNT(DISTINCT invoice_no), 2) as value FROM processed_transactions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "green", "value": 300 }
+            ]
+          },
+          "unit": "currencyGBP"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "id": 4,
+      "title": "Processed Line Items",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', 'now') as time, COUNT(*) as value FROM processed_transactions;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Orders Per Minute (Streaming Velocity)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT strftime('%s', window_start) as time, orders_count as value FROM windowed_order_metrics ORDER BY window_start ASC;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "showPoints": "auto"
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Revenue Over Time (Hourly Distribution)",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT CAST(strftime('%H', invoice_timestamp) AS INTEGER) as hour, ROUND(SUM(revenue), 2) as revenue FROM processed_transactions GROUP BY hour ORDER BY hour ASC;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "unit": "currencyGBP"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Top Products by Revenue",
+      "type": "bargauge",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT stock_code || ' - ' || SUBSTR(COALESCE(description, 'N/A'), 1, 20) as metric, ROUND(SUM(revenue), 2) as value FROM processed_transactions GROUP BY stock_code ORDER BY value DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "currencyGBP"
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Revenue by Country",
+      "type": "piechart",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT country as metric, ROUND(SUM(revenue), 2) as value FROM processed_transactions GROUP BY country ORDER BY value DESC LIMIT 8;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyGBP"
+        }
+      },
+      "options": {
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Top Customers Leaderboard",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT customer_id, country, total_orders, total_spend, avg_spend_per_order, last_order_timestamp FROM customer_analytics ORDER BY total_spend DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "total_spend" },
+            "properties": [{ "id": "unit", "value": "currencyGBP" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "avg_spend_per_order" },
+            "properties": [{ "id": "unit", "value": "currencyGBP" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "title": "Streaming Metrics (Recent Window Summaries)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-ecommerce" },
+      "targets": [
+        {
+          "rawSql": "SELECT window_start, window_end, orders_count, line_items_count, total_revenue, avg_order_value FROM windowed_order_metrics ORDER BY window_start DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "total_revenue" },
+            "properties": [{ "id": "unit", "value": "currencyGBP" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "avg_order_value" },
+            "properties": [{ "id": "unit", "value": "currencyGBP" }]
+          }
+        ]
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["ecommerce", "streaming", "analytics", "sqlite"],
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "title": "E-Commerce Revenue & Streaming Analytics",
+  "uid": "ecommerce-revenue-analytics",
+  "version": 1
+}

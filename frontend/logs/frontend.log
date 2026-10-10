@@ -1,0 +1,4 @@
+2026-10-11 03:00:00 | INFO    | [frontend.init] ApexAnalytics Enterprise Frontend initialized
+2026-10-11 03:00:01 | INFO    | [frontend.db] Connected to SQLite database in read-only mode (WAL active)
+2026-10-11 03:00:02 | INFO    | [frontend.services] Distributed service health probes initialized
+2026-10-11 03:00:03 | INFO    | [frontend.telemetry] Streaming KPI aggregation pipeline operational

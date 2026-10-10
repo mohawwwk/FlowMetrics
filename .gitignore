@@ -1,0 +1,29 @@
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Testing & Linters
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local Environment Variables
+.env.local
+
+# Checkpoints & Temporary WAL files
+data/checkpoint/
+data/*.db-wal
+data/*.db-shm
+data/dlq/
+
+# OS Artifacts
+.DS_Store
+Thumbs.db

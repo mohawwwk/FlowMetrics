@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Ecommerce Dashboards'
+    orgId: 1
+    folder: 'E-Commerce Analytics'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: dashboards

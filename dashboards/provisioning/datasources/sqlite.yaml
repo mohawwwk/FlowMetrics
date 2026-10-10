@@ -1,0 +1,11 @@
+apiVersion: 1
+
+datasources:
+  - name: SQLite-Ecommerce
+    type: frser-sqlite-datasource
+    access: proxy
+    isDefault: true
+    jsonData:
+      path: "${SQLITE_DB_PATH:-data/ecommerce.db}"
+      secure: false
+    editable: true

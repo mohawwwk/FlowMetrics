@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Real-Time Analytics & ML Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0c0e;
+      --panel-bg: #14161b;
+      --panel-border: #22262f;
+      --panel-header: #1b1e25;
+      --text-main: #d8d9da;
+      --text-muted: #8e94a0;
+      --accent-orange: #ff7800;
+      --accent-green: #37d67a;
+      --accent-blue: #3274d9;
+      --accent-purple: #967adc;
+      --accent-yellow: #f6c026;
+      --accent-red: #f2495c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    /* Top Bar */
+    header {
+      background: var(--panel-header);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand svg { width: 28px; height: 28px; fill: var(--accent-orange); }
+    .brand h1 { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: -0.2px; }
+    .badge {
+      background: #2a2c35;
+      color: #9fa7b3;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge-live {
+      background: rgba(55, 214, 122, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(55, 214, 122, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge-live::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.7; }
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-tabs {
+      display: flex;
+      background: #111317;
+      border-radius: 6px;
+      padding: 3px;
+      border: 1px solid var(--panel-border);
+    }
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .nav-btn.active {
+      background: #222631;
+      color: #fff;
+    }
+    .btn {
+      background: #1f232b;
+      border: 1px solid var(--panel-border);
+      color: #d8d9da;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: #2a2f3a; color: #fff; }
+    .btn-primary {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+
+    /* Dashboard Layout */
+    main { padding: 16px 24px; max-width: 1600px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+
+    @media (max-width: 1200px) {
+      .col-3, .col-4 { grid-column: span 6; }
+      .col-8 { grid-column: span 12; }
+    }
+    @media (max-width: 768px) {
+      .col-3, .col-4, .col-6 { grid-column: span 12; }
+    }
+
+    /* Panel Card */
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: #fff;
+    }
+    .panel-header .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .panel-body {
+      padding: 14px;
+      flex: 1;
+      position: relative;
+    }
+
+    /* Stat Card */
+    .stat-card {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .stat-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .stat-green { color: var(--accent-green); }
+    .stat-blue { color: var(--accent-blue); }
+    .stat-amber { color: var(--accent-yellow); }
+    .stat-purple { color: var(--accent-purple); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12px;
+    }
+    th {
+      padding: 8px 10px;
+      background: #181b22;
+      color: #9fa7b3;
+      font-weight: 600;
+      border-bottom: 1px solid var(--panel-border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #d1d5db;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .tag {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .tag-green { background: rgba(55, 214, 122, 0.15); color: var(--accent-green); }
+    .tag-yellow { background: rgba(246, 192, 38, 0.15); color: var(--accent-yellow); }
+    .tag-red { background: rgba(242, 73, 92, 0.15); color: var(--accent-red); }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      <div>
+        <h1>E-Commerce Analytics Platform</h1>
+      </div>
+      <span class="badge">SQLite WAL Mode</span>
+      <span class="badge badge-live">LIVE STREAMING</span>
+    </div>
+
+    <div class="controls">
+      <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('tab-revenue')">Revenue & Streaming</button>
+        <button class="nav-btn" onclick="switchTab('tab-ml')">ML Predictions & Accuracy</button>
+      </div>
+
+      <button class="btn" id="refresh-btn" onclick="fetchData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+
+      <select id="auto-refresh-select" class="btn" onchange="updateAutoRefresh(this.value)">
+        <option value="0">Auto: Off</option>
+        <option value="5000" selected>Auto: 5s</option>
+        <option value="10000">Auto: 10s</option>
+        <option value="30000">Auto: 30s</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: REVENUE & STREAMING DASHBOARD -->
+    <div id="tab-revenue" class="tab-content active">
+      <!-- Top KPIs -->
+      <div class="grid">
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Total Revenue</div>
+          <div class="stat-value stat-green" id="kpi-revenue">£0.00</div>
+          <div class="stat-sub">Aggregated from processed transactions</div>
+        </div>
+
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Total Orders</div>
+          <div class="stat-value stat-blue" id="kpi-orders">0</div>
+          <div class="stat-sub" id="kpi-customers">0 unique customers</div>
+        </div>
+
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Average Purchase (AOV)</div>
+          <div class="stat-value stat-amber" id="kpi-aov">£0.00</div>
+          <div class="stat-sub" id="kpi-item-avg">Avg line-item: £0.00</div>
+        </div>
+
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Processed Line Items</div>
+          <div class="stat-value stat-purple" id="kpi-items">0</div>
+          <div class="stat-sub">Kafka & Spark stream consumers</div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="grid">
+        <div class="col-6 panel">
+          <div class="panel-header">
+            <span>Orders Per Minute</span>
+            <span class="subtitle">Streaming Transaction Velocity</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-orders-min"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 panel">
+          <div class="panel-header">
+            <span>Hourly Revenue Distribution</span>
+            <span class="subtitle">Intraday Sales Curve (£)</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-hourly"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="grid">
+        <div class="col-8 panel">
+          <div class="panel-header">
+            <span>Top Selling Products by Revenue</span>
+            <span class="subtitle">Top SKUs ranked by total sales</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-top-products"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-4 panel">
+          <div class="panel-header">
+            <span>Revenue by Country</span>
+            <span class="subtitle">Geographic Sales Share</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-countries"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tables Row -->
+      <div class="grid">
+        <div class="col-6 panel">
+          <div class="panel-header">
+            <span>Customer Leaderboard</span>
+            <span class="subtitle">Top 10 Highest Spending Customers</span>
+          </div>
+          <div class="panel-body" style="padding: 0; max-height: 320px; overflow-y: auto;">
+            <table id="table-customers">
+              <thead>
+                <tr>
+                  <th>Customer ID</th>
+                  <th>Country</th>
+                  <th style="text-align: right;">Orders</th>
+                  <th style="text-align: right;">Total Spend</th>
+                  <th style="text-align: right;">Avg / Order</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" style="text-align: center;">Loading customers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-6 panel">
+          <div class="panel-header">
+            <span>Streaming Metrics</span>
+            <span class="subtitle">Recent Window Aggregations (Tumbling 60s)</span>
+          </div>
+          <div class="panel-body" style="padding: 0; max-height: 320px; overflow-y: auto;">
+            <table id="table-streaming">
+              <thead>
+                <tr>
+                  <th>Window Start</th>
+                  <th style="text-align: right;">Orders</th>
+                  <th style="text-align: right;">Line Items</th>
+                  <th style="text-align: right;">Window Revenue</th>
+                  <th style="text-align: right;">AOV</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" style="text-align: center;">Loading window metrics...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ML PREDICTIONS DASHBOARD -->
+    <div id="tab-ml" class="tab-content">
+      <!-- ML KPIs -->
+      <div class="grid">
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Predictions Scored</div>
+          <div class="stat-value stat-blue" id="kpi-ml-count">0</div>
+          <div class="stat-sub">Scored by Spark MLlib Model</div>
+        </div>
+
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Mean Absolute Error (MAE)</div>
+          <div class="stat-value stat-green" id="kpi-ml-mae">£0.00</div>
+          <div class="stat-sub">Average absolute discrepancy</div>
+        </div>
+
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Root Mean Squared Error (RMSE)</div>
+          <div class="stat-value stat-amber" id="kpi-ml-rmse">£0.00</div>
+          <div class="stat-sub">Residual standard deviation</div>
+        </div>
+
+        <div class="col-3 panel stat-card">
+          <div class="stat-title">Prediction Bias (Mean Residual)</div>
+          <div class="stat-value stat-purple" id="kpi-ml-bias">£0.00</div>
+          <div class="stat-sub" id="kpi-ml-max">Max Error: £0.00</div>
+        </div>
+      </div>
+
+      <!-- ML Charts -->
+      <div class="grid">
+        <div class="col-8 panel">
+          <div class="panel-header">
+            <span>Actual vs Predicted Revenue</span>
+            <span class="subtitle">First 50 Line-Item Comparisons</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-actual-vs-pred"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-4 panel">
+          <div class="panel-header">
+            <span>Residual Error Distribution</span>
+            <span class="subtitle">Absolute error bracket counts</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-residuals"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ML Discrepancies Table -->
+      <div class="grid">
+        <div class="col-12 panel">
+          <div class="panel-header">
+            <span>Top Prediction Discrepancies (Model Drift Monitoring)</span>
+            <span class="subtitle">Transactions with highest absolute inference deviation</span>
+          </div>
+          <div class="panel-body" style="padding: 0;">
+            <table id="table-discrepancies">
+              <thead>
+                <tr>
+                  <th>Invoice No</th>
+                  <th>Stock Code</th>
+                  <th style="text-align: right;">Quantity</th>
+                  <th style="text-align: right;">Unit Price</th>
+                  <th>Country</th>
+                  <th style="text-align: right;">Actual Revenue</th>
+                  <th style="text-align: right;">Predicted Revenue</th>
+                  <th style="text-align: right;">Abs Error</th>
+                  <th>Model Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="9" style="text-align: center;">Loading model discrepancies...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Global chart instances
+    let chartOrdersMin = null;
+    let chartHourly = null;
+    let chartTopProducts = null;
+    let chartCountries = null;
+    let chartActualVsPred = null;
+    let chartResiduals = null;
+    let autoRefreshTimer = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function updateAutoRefresh(intervalMs) {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      const val = parseInt(intervalMs);
+      if (val > 0) {
+        autoRefreshTimer = setInterval(fetchData, val);
+      }
+    }
+
+    async function fetchData() {
+      try {
+        const [summaryRes, countriesRes, productsRes, ordersMinRes, hourlyRes, customersRes, streamRes, mlRes] = await Promise.all([
+          fetch('/api/summary').then(r => r.json()),
+          fetch('/api/country-breakdown').then(r => r.json()),
+          fetch('/api/top-products').then(r => r.json()),
+          fetch('/api/orders-per-minute').then(r => r.json()),
+          fetch('/api/hourly-trends').then(r => r.json()),
+          fetch('/api/customer-leaderboard').then(r => r.json()),
+          fetch('/api/streaming-metrics').then(r => r.json()),
+          fetch('/api/ml-predictions').then(r => r.json()),
+        ]);
+
+        updateKPIs(summaryRes.summary, summaryRes.ml_accuracy);
+        renderOrdersPerMinuteChart(ordersMinRes);
+        renderHourlyChart(hourlyRes);
+        renderTopProductsChart(productsRes);
+        renderCountriesChart(countriesRes);
+        renderCustomerTable(customersRes);
+        renderStreamingTable(streamRes);
+        renderMLSection(mlRes);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      }
+    }
+
+    function updateKPIs(s, ml) {
+      if (s) {
+        document.getElementById('kpi-revenue').textContent = `£${Number(s.total_revenue || 0).toLocaleString('en-GB', {minimumFractionDigits: 2})}`;
+        document.getElementById('kpi-orders').textContent = Number(s.total_orders || 0).toLocaleString();
+        document.getElementById('kpi-customers').textContent = `${s.unique_customers || 0} unique customers across ${s.unique_countries || 0} countries`;
+        
+        const aov = s.total_orders > 0 ? (s.total_revenue / s.total_orders) : 0;
+        document.getElementById('kpi-aov').textContent = `£${aov.toFixed(2)}`;
+        document.getElementById('kpi-item-avg').textContent = `Avg item revenue: £${Number(s.avg_item_revenue || 0).toFixed(2)}`;
+        document.getElementById('kpi-items').textContent = Number(s.total_transactions || 0).toLocaleString();
+      }
+      if (ml) {
+        document.getElementById('kpi-ml-count').textContent = Number(ml.sample_count || 0).toLocaleString();
+        document.getElementById('kpi-ml-mae').textContent = `£${Number(ml.calculated_mae || 0).toFixed(2)}`;
+        document.getElementById('kpi-ml-rmse').textContent = `£${Number(ml.calculated_rmse || 0).toFixed(2)}`;
+        document.getElementById('kpi-ml-bias').textContent = `${Number(ml.mean_bias || 0) >= 0 ? '+' : ''}£${Number(ml.mean_bias || 0).toFixed(2)}`;
+        document.getElementById('kpi-ml-max').textContent = `Max single error: £${Number(ml.max_error || 0).toFixed(2)}`;
+      }
+    }
+
+    function renderOrdersPerMinuteChart(data) {
+      const ctx = document.getElementById('chart-orders-min').getContext('2d');
+      const labels = data.map(d => d.window_start.split(' ')[1] || d.window_start);
+      const values = data.map(d => d.orders_count);
+
+      if (chartOrdersMin) chartOrdersMin.destroy();
+      chartOrdersMin = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Orders / Window',
+            data: values,
+            borderColor: '#3274d9',
+            backgroundColor: 'rgba(50, 116, 217, 0.15)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0', maxTicksLimit: 12 } },
+            y: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0', beginAtZero: true } }
+          }
+        }
+      });
+    }
+
+    function renderHourlyChart(data) {
+      const ctx = document.getElementById('chart-hourly').getContext('2d');
+      const labels = data.map(d => `${d.hour_of_day}:00`);
+      const values = data.map(d => d.hourly_revenue);
+
+      if (chartHourly) chartHourly.destroy();
+      chartHourly = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Revenue (£)',
+            data: values,
+            backgroundColor: '#37d67a',
+            borderRadius: 3,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8e94a0' } },
+            y: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0', callback: v => `£${v}` } }
+          }
+        }
+      });
+    }
+
+    function renderTopProductsChart(data) {
+      const ctx = document.getElementById('chart-top-products').getContext('2d');
+      const labels = data.map(d => d.description.length > 22 ? d.description.substring(0, 22) + '...' : d.description);
+      const values = data.map(d => d.total_product_revenue);
+
+      if (chartTopProducts) chartTopProducts.destroy();
+      chartTopProducts = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Revenue (£)',
+            data: values,
+            backgroundColor: 'rgba(255, 120, 0, 0.85)',
+            borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0', callback: v => `£${v}` } },
+            y: { grid: { display: false }, ticks: { color: '#d8d9da' } }
+          }
+        }
+      });
+    }
+
+    function renderCountriesChart(data) {
+      const ctx = document.getElementById('chart-countries').getContext('2d');
+      const labels = data.map(d => d.country);
+      const values = data.map(d => d.country_revenue);
+
+      if (chartCountries) chartCountries.destroy();
+      chartCountries = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: [
+              '#3274d9', '#37d67a', '#ff7800', '#967adc',
+              '#f6c026', '#f2495c', '#46a546', '#00b4d8'
+            ],
+            borderColor: '#14161b',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#d8d9da', boxWidth: 12 } }
+          }
+        }
+      });
+    }
+
+    function renderCustomerTable(data) {
+      const tbody = document.querySelector('#table-customers tbody');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No customer records</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(c => `
+        <tr>
+          <td class="mono"><strong>${c.customer_id}</strong></td>
+          <td>${c.country}</td>
+          <td style="text-align: right;" class="mono">${c.total_orders}</td>
+          <td style="text-align: right; color: var(--accent-green);" class="mono">£${Number(c.total_spend).toFixed(2)}</td>
+          <td style="text-align: right;" class="mono">£${Number(c.avg_spend_per_order).toFixed(2)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderStreamingTable(data) {
+      const tbody = document.querySelector('#table-streaming tbody');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No window aggregations</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(w => `
+        <tr>
+          <td class="mono" style="font-size: 11px;">${w.window_start}</td>
+          <td style="text-align: right;" class="mono">${w.orders_count}</td>
+          <td style="text-align: right;" class="mono">${w.line_items_count}</td>
+          <td style="text-align: right; color: var(--accent-green);" class="mono">£${Number(w.total_revenue).toFixed(2)}</td>
+          <td style="text-align: right;" class="mono">£${Number(w.avg_order_value).toFixed(2)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderMLSection(mlData) {
+      // 1. Actual vs Predicted Curve
+      const ctxCurve = document.getElementById('chart-actual-vs-pred').getContext('2d');
+      const pts = mlData.sample_points || [];
+      const labels = pts.map((_, i) => `#${i + 1}`);
+      const actuals = pts.map(p => p.actual_revenue);
+      const preds = pts.map(p => p.predicted_revenue);
+
+      if (chartActualVsPred) chartActualVsPred.destroy();
+      chartActualVsPred = new Chart(ctxCurve, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Actual Revenue (£)',
+              data: actuals,
+              borderColor: '#37d67a',
+              backgroundColor: '#37d67a',
+              borderWidth: 2,
+              pointRadius: 2,
+              tension: 0.2,
+            },
+            {
+              label: 'Predicted Revenue (£)',
+              data: preds,
+              borderColor: '#ff7800',
+              backgroundColor: '#ff7800',
+              borderWidth: 2,
+              pointRadius: 2,
+              borderDash: [4, 4],
+              tension: 0.2,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#d8d9da' } }
+          },
+          scales: {
+            x: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0' } },
+            y: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0', callback: v => `£${v}` } }
+          }
+        }
+      });
+
+      // 2. Residual Error Distribution
+      const ctxRes = document.getElementById('chart-residuals').getContext('2d');
+      const buckets = mlData.error_buckets || [];
+      const bLabels = buckets.map(b => b.bucket);
+      const bValues = buckets.map(b => b.count);
+
+      if (chartResiduals) chartResiduals.destroy();
+      chartResiduals = new Chart(ctxRes, {
+        type: 'bar',
+        data: {
+          labels: bLabels,
+          datasets: [{
+            label: 'Predictions Count',
+            data: bValues,
+            backgroundColor: '#967adc',
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#d8d9da' } },
+            y: { grid: { color: '#1e222b' }, ticks: { color: '#8e94a0' } }
+          }
+        }
+      });
+
+      // 3. Discrepancies Table
+      const tbody = document.querySelector('#table-discrepancies tbody');
+      const disc = mlData.discrepancies || [];
+      if (disc.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No prediction records</td></tr>';
+        return;
+      }
+      tbody.innerHTML = disc.map(d => {
+        let tagClass = 'tag-green';
+        if (d.abs_error > 50) tagClass = 'tag-red';
+        else if (d.abs_error > 10) tagClass = 'tag-yellow';
+
+        return `
+          <tr>
+            <td class="mono"><strong>${d.invoice_no}</strong></td>
+            <td class="mono">${d.stock_code}</td>
+            <td style="text-align: right;" class="mono">${d.quantity}</td>
+            <td style="text-align: right;" class="mono">£${Number(d.unit_price).toFixed(2)}</td>
+            <td>${d.country}</td>
+            <td style="text-align: right;" class="mono">£${Number(d.actual_revenue).toFixed(2)}</td>
+            <td style="text-align: right;" class="mono">£${Number(d.predicted_revenue).toFixed(2)}</td>
+            <td style="text-align: right;"><span class="tag ${tagClass}">£${Number(d.abs_error).toFixed(2)}</span></td>
+            <td><span class="badge" style="font-size: 10px;">${d.model_name}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchData();
+      updateAutoRefresh(5000);
+    });
+  </script>
+</body>
+</html>

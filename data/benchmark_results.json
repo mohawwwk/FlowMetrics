@@ -1,0 +1,171 @@
+{
+  "stress_producer": {
+    "name": "StressProducer_mock_4threads",
+    "total_operations": 5000,
+    "total_bytes": 1051236,
+    "duration_seconds": 0.7405,
+    "throughput_ops_sec": 6752.6,
+    "throughput_mb_sec": 1.35,
+    "p50_latency_ms": 0.554,
+    "p95_latency_ms": 0.787,
+    "p99_latency_ms": 0.988,
+    "min_latency_ms": 0.207,
+    "max_latency_ms": 5.444,
+    "avg_latency_ms": 0.569,
+    "start_memory_mb": 0.01,
+    "peak_memory_mb": 2.22,
+    "memory_delta_mb": 2.21,
+    "error_count": 0,
+    "extra_metadata": {
+      "threads": 4,
+      "batch_size": 500,
+      "mode": "mock",
+      "buffer_exhausted_events": 0
+    }
+  },
+  "large_dataset": {
+    "csv_parsing": {
+      "name": "CSV_Parse_Clean",
+      "total_operations": 14778,
+      "total_bytes": 2226478,
+      "duration_seconds": 1.1818,
+      "throughput_ops_sec": 12504.39,
+      "throughput_mb_sec": 1.8,
+      "p50_latency_ms": 0.063,
+      "p95_latency_ms": 0.064,
+      "p99_latency_ms": 0.064,
+      "min_latency_ms": 0.06,
+      "max_latency_ms": 0.064,
+      "avg_latency_ms": 0.062,
+      "start_memory_mb": 1.98,
+      "peak_memory_mb": 12.05,
+      "memory_delta_mb": 10.07,
+      "error_count": 0,
+      "extra_metadata": {
+        "valid_records_extracted": 14778
+      }
+    },
+    "aggregations": {
+      "name": "Analytical_Aggregation",
+      "total_operations": 14778,
+      "total_bytes": 0,
+      "duration_seconds": 0.1028,
+      "throughput_ops_sec": 143802.29,
+      "throughput_mb_sec": 0.0,
+      "p50_latency_ms": 0.005,
+      "p95_latency_ms": 0.005,
+      "p99_latency_ms": 0.005,
+      "min_latency_ms": 0.005,
+      "max_latency_ms": 0.005,
+      "avg_latency_ms": 0.005,
+      "start_memory_mb": 11.99,
+      "peak_memory_mb": 12.45,
+      "memory_delta_mb": 0.46,
+      "error_count": 0,
+      "extra_metadata": {
+        "unique_countries": 16,
+        "unique_products": 2232,
+        "unique_customers": 413
+      }
+    },
+    "sqlite_ingestion": {
+      "name": "SQLite_Bulk_Ingest",
+      "total_operations": 14778,
+      "total_bytes": 0,
+      "duration_seconds": 0.4791,
+      "throughput_ops_sec": 30843.2,
+      "throughput_mb_sec": 0.0,
+      "p50_latency_ms": 0.011,
+      "p95_latency_ms": 0.011,
+      "p99_latency_ms": 0.011,
+      "min_latency_ms": 0.009,
+      "max_latency_ms": 0.011,
+      "avg_latency_ms": 0.01,
+      "start_memory_mb": 12.27,
+      "peak_memory_mb": 13.55,
+      "memory_delta_mb": 1.28,
+      "error_count": 0,
+      "extra_metadata": {
+        "batches_executed": 3,
+        "db_file_size_mb": 3.64
+      }
+    }
+  },
+  "kafka_failures": {
+    "offline": {
+      "scenario": "broker_offline",
+      "messages_attempted": 50,
+      "delivered": 0,
+      "dlq_spilled": 50,
+      "circuit_state": "OPEN",
+      "circuit_tripped_count": 1,
+      "elapsed_ms": 59.42,
+      "fast_fail_avg_ms": 1.188
+    },
+    "flaky": {
+      "scenario": "flaky_network",
+      "messages_attempted": 200,
+      "delivered": 22,
+      "dlq_spilled": 178,
+      "p50_latency_ms": 0.611,
+      "p95_latency_ms": 1.038,
+      "p99_latency_ms": 15.79,
+      "recovery_rate_pct": 11.0
+    },
+    "healing": {
+      "scenario": "self_healing",
+      "probe_success": true,
+      "final_circuit_state": "CLOSED",
+      "post_recovery_delivered": 20
+    }
+  },
+  "spark_recovery": {
+    "status": "PASSED",
+    "total_batches_processed": 4,
+    "crash_batch_id": 2,
+    "recovered_batch_id": 2,
+    "duplicates_prevented": 150,
+    "final_unique_sink_records": 600,
+    "recovery_latency_ms": 2.264,
+    "checkpoint_integrity_verified": true
+  },
+  "database_recovery": {
+    "rollback_test": {
+      "scenario": "uncommitted_crash_rollback",
+      "baseline_count": 10,
+      "post_crash_count": 10,
+      "dirty_rows_detected": 0,
+      "rollback_verified": true
+    },
+    "wal_checkpoint_test": {
+      "scenario": "wal_checkpoint_truncate",
+      "inserted_records": 3000,
+      "wal_size_before_bytes": 856992,
+      "wal_size_after_bytes": 0,
+      "checkpoint_status": {
+        "busy": 0,
+        "log_frames": 0,
+        "checkpointed_frames": 0
+      },
+      "records_intact": true
+    },
+    "integrity_check_test": {
+      "scenario": "integrity_check",
+      "integrity_check": "ok",
+      "quick_check": "ok",
+      "status": "HEALTHY"
+    },
+    "concurrency_contention_test": {
+      "scenario": "concurrent_write_contention",
+      "threads": 8,
+      "total_transactions": 400,
+      "successful_transactions": 400,
+      "lock_errors": 0,
+      "throughput_tx_sec": 1056.72,
+      "p50_latency_ms": 0.264,
+      "p95_latency_ms": 14.083,
+      "p99_latency_ms": 124.427
+    }
+  },
+  "suite_execution_seconds": 4.13
+}
