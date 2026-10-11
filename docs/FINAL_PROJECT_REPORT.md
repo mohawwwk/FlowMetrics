@@ -1,7 +1,7 @@
-# Final Project Technical & Academic Report: Real-Time Big Data Analytics & Machine Learning Platform for Financial E-Commerce
+# Final Project Technical & Academic Report: FlowMetrics Real-Time Big Data Analytics & Machine Learning Platform (DataPulse Engine)
 
 **Author:** Antigravity AI Engineering Team  
-**Project Repository:** `AI_Financial_Platform`  
+**Project Repository:** `FlowMetrics` (`AI_Financial_Platform` / DataPulse Engine)  
 **Evaluation Target:** Production Big Data & Distributed Streaming Infrastructure  
 **Dataset:** UCI Online Retail Transaction Dataset (541,909 Transactions)  
 
@@ -11,9 +11,9 @@
 
 Modern e-commerce and financial transaction ecosystems require data engineering architectures capable of ingesting high-velocity event streams, performing real-time analytics, evaluating predictive machine learning models at micro-batch latency, and surviving catastrophic infrastructure failures without state corruption or data loss. 
 
-This report presents the design, mathematical foundations, implementation, and empirical evaluation of an end-to-end distributed streaming platform. The architecture unites **Apache Kafka** for fault-tolerant event ingestion, **Apache Spark Structured Streaming** for continuous windowed aggregations and stateful transformations, **Spark MLlib** for regression-based revenue forecasting ($R^2 = 0.9745, \text{RMSE} = 7.63$), **SQLite in Write-Ahead Logging (WAL)** mode for high-throughput ACID persistence, and **Grafana / Flask** for real-time visualization. 
+This report presents the design, mathematical foundations, implementation, and empirical evaluation of an end-to-end distributed streaming platform. The architecture unites **Apache Kafka 3.8.0 (KRaft mode, Scala 2.13)** for fault-tolerant event ingestion, **Apache Spark Structured Streaming (v3.5.3)** for continuous windowed aggregations (1-min tumbling and 5-min sliding windows) and stateful transformations, **Spark MLlib** for regression-based revenue forecasting ($R^2 = 0.9745, \text{RMSE} = 7.63, \text{MAE} = 4.76$), **SQLite in Write-Ahead Logging (WAL)** mode for high-throughput ACID persistence, and a multi-tier presentation layer incorporating **Streamlit Corporate UI**, **Flask Embedded Console**, and **Grafana Dashboards**. 
 
-We subject the system to rigorous fault-tolerance and stress-testing benchmarks, including broker disconnections, mid-microbatch driver crashes, WAL truncation checkpoints, and multi-threaded write lock contention. Experimental results demonstrate sustained ingestion of **7,197 messages/second**, CSV parsing at **13,322 rows/second**, analytical aggregations at **146,310 records/second**, and database transactional insertion at **30,843 rows/second**, with zero data loss and automated self-healing.
+We subject the system to rigorous fault-tolerance and stress-testing benchmarks across 24 automated unit and integration tests (8 database tests, 9 visualization tests, 7 chaos/recovery tests), including broker disconnections, mid-microbatch driver crashes, WAL truncation checkpoints, and multi-threaded write lock contention. Experimental results demonstrate sustained ingestion of **7,197 messages/second**, CSV parsing at **13,322 rows/second**, analytical aggregations at **146,310 records/second**, and database transactional insertion at **30,843 rows/second**, with zero data loss and automated self-healing.
 
 ---
 
@@ -40,7 +40,7 @@ graph TD
     subgraph Layer1 [1. Ingestion Layer]
         A[UCI Online Retail CSV<br/>541,909 rows / 45 MB] --> B[Kafka Producer Engine<br/>acks='all', linger_ms=10, batch_size=64KB]
         B -. Failover .-> C[Local Disk Dead-Letter Queue<br/>data/dlq/failed_events.jsonl]
-        B --> D[Kafka Topic: ecommerce-transactions<br/>4 Partitions, Replication]
+        B --> D[Kafka Topic: ecommerce-transactions<br/>4 Partitions, KRaft Metadata]
     end
 
     subgraph Layer2 [2. Stream Processing Layer]
@@ -51,7 +51,7 @@ graph TD
 
     subgraph Layer3 [3. Predictive ML Layer]
         G --> H[Spark MLlib Pipeline<br/>StringIndexer + OneHotEncoder + VectorAssembler]
-        H --> I[Fitted Regression Model<br/>LinearRegression vs. RandomForest]
+        H --> I[Fitted Regression Model<br/>LinearRegression vs. RandomForest<br/>Winner: LinearRegression R²=0.9745]
     end
 
     subgraph Layer4 [4. Storage Layer]
@@ -60,9 +60,10 @@ graph TD
         J --> K[(ecommerce.db<br/>processed_transactions, ml_predictions, analytics)]
     end
 
-    subgraph Layer5 [5. Visualization Layer]
-        K --> L[Grafana Provisioned Dashboards<br/>Revenue Analytics & ML Monitoring]
-        K --> M[Flask Real-Time Web Console<br/>SSE / REST Endpoints]
+    subgraph Layer5 [5. Multi-Tier Visualization Layer]
+        K --> L[Grafana Provisioned Dashboards<br/>Revenue Analytics & ML Monitoring (Port 3000)]
+        K --> M[Flask Real-Time Web Console<br/>SSE / REST Endpoints (Port 5000)]
+        K --> N[Streamlit Corporate UI<br/>9 Executive Views & Plotly Charts (Port 8501)]
     end
 ```
 

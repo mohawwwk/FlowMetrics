@@ -1,14 +1,16 @@
-# Real-Time E-Commerce & Financial Big Data Analytics Platform
+# FlowMetrics: Real-Time E-Commerce & Financial Big Data Analytics Platform (DataPulse Engine)
 
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![Apache Spark 3.5.3](https://img.shields.io/badge/Apache%20Spark-3.5.3-orange.svg)](https://spark.apache.org/)
-[![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-2.13-black.svg)](https://kafka.apache.org/)
+[![Apache Kafka 3.8.0](https://img.shields.io/badge/Apache%20Kafka-3.8.0%20(Scala%202.13)-black.svg)](https://kafka.apache.org/)
 [![SQLite WAL](https://img.shields.io/badge/SQLite-WAL%20Mode-lightgrey.svg)](https://www.sqlite.org/)
+[![Streamlit UI](https://img.shields.io/badge/Streamlit-Enterprise%20App-red.svg)](https://streamlit.io/)
+[![Flask API](https://img.shields.io/badge/Flask-REST%20%26%20SSE-green.svg)](https://flask.palletsprojects.com/)
 [![Tests Passing](https://img.shields.io/badge/Tests-24%2F24%20Passing-brightgreen.svg)]()
 
 A production-grade, distributed big data streaming platform designed for real-time transaction ingestion, fault-tolerant windowed aggregations, predictive machine learning inference, high-concurrency transactional storage, and interactive analytical dashboards.
 
-Built using **Apache Kafka**, **Apache Spark Structured Streaming (v3.5.3)**, **Spark MLlib**, **SQLite Write-Ahead Logging (WAL)**, and **Grafana / Flask Real-Time Dashboards**.
+Built using **Apache Kafka 3.8.0 (KRaft)**, **Apache Spark Structured Streaming (v3.5.3)**, **Spark MLlib**, **SQLite Write-Ahead Logging (WAL)**, and multi-tier visualization (**Streamlit Corporate UI**, **Flask Embedded Console**, and **Grafana Dashboards**).
 
 ---
 
@@ -26,7 +28,7 @@ flowchart TD
         PROD -. Failover .-> DLQ
     end
 
-    subgraph Kafka_Cluster ["2. Distributed Message Broker"]
+    subgraph Kafka_Cluster ["2. Distributed Message Broker (KRaft Mode)"]
         TOPIC["Kafka Topic: 'ecommerce-transactions'<br/>(Partitioned, Replication, 7-day retention)"]
         PROD -->|JSON Streaming Events| TOPIC
     end
@@ -77,9 +79,10 @@ flowchart TD
         POOL --> T_CUST
     end
 
-    subgraph Visualization ["6. Real-Time Analytics & Monitoring"]
-        GRAFANA["Grafana Dashboards<br/>- Revenue Analytics<br/>- ML Prediction Performance<br/>- Customer Leaderboards"]
-        FLASK_UI["Embedded Real-Time Web Console<br/>(Live SSE / REST API)"]
+    subgraph Visualization ["6. Multi-Tier Real-Time Analytics & Monitoring"]
+        STREAMLIT_UI["Streamlit Corporate UI (Port 8501)<br/>- 9 Executive Views & Plotly Charts<br/>- Live Health Ribbons & ML Studio"]
+        FLASK_UI["Flask Web Console (Port 5000)<br/>- Lightweight Real-Time SSE<br/>- REST Telemetry Endpoints"]
+        GRAFANA["Grafana Dashboards (Port 3000)<br/>- Operational Revenue Metrics<br/>- ML Residual Diagnostics"]
         
         T_TX --> GRAFANA
         T_PRED --> GRAFANA
@@ -88,6 +91,7 @@ flowchart TD
         T_CUST --> GRAFANA
         
         POOL --> FLASK_UI
+        POOL --> STREAMLIT_UI
     end
 ```
 
@@ -121,6 +125,11 @@ BigData/
 │   ├── FINAL_PROJECT_REPORT.md       # Comprehensive academic & engineering report
 │   ├── PRESENTATION_GUIDE.md         # Slide-by-slide presentation deck notes
 │   └── VIVA_QUESTIONS_AND_ANSWERS.md # 30+ categorized technical viva questions & answers
+├── frontend/                         # Streamlit corporate web application (Port 8501)
+│   ├── app.py                        # Streamlit main entrypoint & navigation
+│   ├── components/                   # KPI cards, sidebar, and chart components
+│   ├── pages/                        # 9 Interactive executive & analytical pages
+│   └── styles/                       # CSS tokens, glassmorphism, & pulsating badges
 ├── models/
 │   └── revenue_model/                # Serialized Spark MLlib PipelineModel
 ├── src/
@@ -128,12 +137,11 @@ BigData/
 │   ├── consumer/                     # Spark Structured Streaming consumers & windows
 │   ├── ml/                           # Spark MLlib training, evaluation, & inference
 │   ├── database/                     # SQLite connection pool, schema, queries & sink
-│   ├── visualization/                # Flask web dashboard & REST API
+│   ├── visualization/                # Flask web dashboard & REST API (Port 5000)
 │   └── testing/                      # Stress tester, benchmarks, & chaos simulators
 └── tests/
     ├── test_database.py              # SQLite integration & concurrency tests (8 tests)
     ├── test_visualization.py         # Dashboard & REST API tests (9 tests)
-    ├── test_ml.py                    # MLlib pipeline & streaming microbatch tests (5 tests)
     └── test_phase7.py                # Stress, chaos, and recovery tests (7 tests)
 ```
 
